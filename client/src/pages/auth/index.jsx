@@ -5,8 +5,12 @@ import { toast } from "sonner";
 // import { SIGNUP_ROUTE } from "@/utils/constant";
 
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
+
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmpassword, setConfirmpassword] = useState("");
@@ -51,11 +55,21 @@ const handleSignup = async (e) => {
 
   if (validateSignup()) {
     try {
-      const response = await axios.post("http://localhost:3001/api/auth/signup", { email, password });
+      // const response = await axios.post("http://localhost:3001/api/auth/signup", { email, password });
+
+      const response = await axios.post(
+        "http://localhost:3001/api/auth/signup",
+        { email, password },
+        { withCredentials: true } // Add this line to include credentials
+      );
+
+ 
+
     
       if (response.status === 201) {
         // Display success toast to the user
         toast.success("Account created successfully!");
+        navigate ("/profile");
         
         // Optionally clear form fields or redirect
         setEmail("");
@@ -82,7 +96,12 @@ const handleLogin = async (e) => {
 
   if (validateLogin()) {
     try {
-      const response = await axios.post("http://localhost:3001/api/auth/login",{ email, password } );// Ensure that cookies are sent and received);
+      const response = await axios.post(
+        "http://localhost:3001/api/auth/login",
+        { email, password },
+        { withCredentials: true } // Add this line to include credentials
+      );// Ensure that cookies are sent and received);
+    
 
 
 
@@ -90,6 +109,17 @@ const handleLogin = async (e) => {
         // Display success toast to the user
         toast.success("Login successful!");
 
+        const user = response.data.user;
+        if (user && user.id) {
+          if (user.profileSetup) {
+            navigate("/chat");
+          } else {
+            navigate("/profile");
+          }
+        } else {
+          toast.error("Invalid user data. Please try again.");
+        }
+      
         // Optionally clear form fields or redirect
         setEmail("");
         setPassword("");
